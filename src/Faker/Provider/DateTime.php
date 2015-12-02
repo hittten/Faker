@@ -2,7 +2,7 @@
 
 namespace Faker\Provider;
 
-class DateTime extends \Faker\Provider\Base
+class DateTime extends Base
 {
     protected static $century = array('I','II','III','IV','V','VI','VII','VIII','IX','X','XI','XII','XIII','XIV','XV','XVI','XVII','XVIII','XIX','XX','XXI');
 
@@ -98,12 +98,11 @@ class DateTime extends \Faker\Provider\Base
      * Get a DateTime object based on a random date between two given dates.
      * Accepts date strings that can be recognized by strtotime().
      *
-     * @param string $startDate Defaults to 30 years ago
-     * @param string $endDate Defaults to "now"
+     * @param \DateTime|string $startDate Defaults to 30 years ago
+     * @param \DateTime|string $endDate   Defaults to "now"
      * @param string $format Defaults to "ISO8601"
-     *
-     * @return \DateTime
      * @example DateTime('1999-02-02 11:42:52')
+     * @return \DateTime
      */
     public static function dateTimeBetween($startDate = '-30 years', $endDate = 'now', $format = \DateTime::ISO8601)
     {
@@ -119,6 +118,29 @@ class DateTime extends \Faker\Provider\Base
         $ts->setTimezone(new \DateTimeZone(date_default_timezone_get()));
 
         return new \DateTime($ts->format($format));
+    }
+
+    /**
+     * Get a DateTime object based on a random date between one given date and
+     * an interval
+     * Accepts date string that can be recognized by strtotime().
+     *
+     * @param string $date      Defaults to 30 years ago
+     * @param string $interval  Defaults to 5 days after
+     * @example dateTimeInInterval('1999-02-02 11:42:52', '+ 5 days')
+     * @return \DateTime
+     */
+    public static function dateTimeInInterval($date = '-30 years', $interval = '+5 days')
+    {
+        $intervalObject = \DateInterval::createFromDateString($interval);
+        $datetime       = $date instanceof \DateTime ? $date : new \DateTime($date);
+        $otherDatetime  = clone $datetime;
+        $otherDatetime->add($intervalObject);
+        
+        $begin = $datetime > $otherDatetime ? $otherDatetime : $datetime;
+        $end = $datetime===$begin ? $otherDatetime : $datetime;
+
+        return static::dateTimeBetween($begin, $end);
     }
 
     /**
